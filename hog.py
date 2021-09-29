@@ -59,6 +59,8 @@ def create_array(image_path):
 	
     return image_array
 
+
+"""Stage 1"""
 ## uses a [-1 0 1 kernel] to calculate gradients.
 ## calculate grad(angle of gradient) and mag(magnitude of gradient) for every pixels.
 ## for the angle, "unsigned" angle is better for the algorithm, so add 180 for negative angles.
@@ -107,6 +109,7 @@ def calculate_histogram(array,weights):
     hist,_ = np.histogram(array,bins=bins,range=bins_range,weights=weights)
     return hist
 
+"""Stage 2"""
 ## 8*8 kernel로 stride=8로 돌아가면서 histogram 생성
 ## (128, 64)의 경우 총 128개의 histogram 생성됨
 def create_hog_features(grad_array,mag_array):
@@ -162,7 +165,8 @@ def create_hog_features(grad_array,mag_array):
         while j<max_w:
             for_norm = cell_array[h:h+block[0],w:w+block[1]]
             mag = np.linalg.norm(for_norm)
-            arr_list = (for_norm/mag).flatten().tolist()
+            """Stage 3""" ## after normalizing, flatten and concatenate
+            arr_list = (for_norm/mag).flatten().tolist()  
             block_list += arr_list
             j += 1
             w += 1
