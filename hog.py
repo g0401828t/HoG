@@ -45,16 +45,13 @@ import numpy as np
 
 cwd = os.getcwd()
 
-#for sliding window for calculating histogram
-#stide = 50, incr stands for this
-cell = [8, 8]
-incr = [8,8]
-bin_num = 9
-# im_size = [32,32]
-im_size = [64,128]
+cell = [8, 8]  # kernel = (8, 8)
+incr = [8, 8]  # stride = 8
+bin_num = 9    # histogram_bin_num
+im_size = [64,128]  # img_size for resizing image
 
 
-#image path must be wrt current working directory
+# image path must be wrt current working directory
 def create_array(image_path):
 	
     image = Image.open(os.path.join(cwd,image_path)).convert('L')
@@ -62,9 +59,9 @@ def create_array(image_path):
 	
     return image_array
 
-#uses a [-1 0 1 kernel]
-## 모든 픽셀에 대한 gradient(각도)와 magnitude(크기) 계산한다.
-## 각도의 경우 "-" 값은 180으로 더해서 unsigned gradients 를 사용하는것이 더 효과적이다.
+## uses a [-1 0 1 kernel] to calculate gradients.
+## calculate grad(angle of gradient) and mag(magnitude of gradient) for every pixels.
+## for the angle, "unsigned" angle is better for the algorithm, so add 180 for negative angles.
 def create_grad_array(image_array):
     image_array = Image.fromarray(image_array)
     if not image_array.size == im_size:
@@ -75,10 +72,11 @@ def create_grad_array(image_array):
     # gamma correction
     # image_array = (image_array)**2.5
 
-    # local contrast normalisation
+    # local contrast normalization
     image_array = (image_array-np.mean(image_array))/np.std(image_array)
     max_h, max_w = im_size[1],im_size[0]
 
+    # calculation of gradients for each pixels.
     grad = np.zeros([max_h, max_w])
     mag = np.zeros([max_h, max_w])
     for h,row in enumerate(image_array):
@@ -100,13 +98,14 @@ def write_hog_file(filename, final_array):
 def read_hog_file(filename):
     return np.loadtxt(filename)
 
+
+# calcualte histogram for 0, 20, .., 180.
+# num_bins = 9
 def calculate_histogram(array,weights):
     bins_range = (0, 180)
     bins = bin_num
     hist,_ = np.histogram(array,bins=bins,range=bins_range,weights=weights)
     return hist
-
-
 
 ## 8*8 kernel로 stride=8로 돌아가면서 histogram 생성
 ## (128, 64)의 경우 총 128개의 histogram 생성됨
